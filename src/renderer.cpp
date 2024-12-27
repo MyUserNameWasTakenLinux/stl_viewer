@@ -1,5 +1,7 @@
 #include "renderer.h"
 #include <cstring>
+#include <limits>
+#include <algorithm>
 
 
 const std::vector<const char*> VALIDATION_LAYERS = {
@@ -63,6 +65,45 @@ std::vector<const char*> get_required_extensions() {
     std::vector<const char*> extensions(glfw_extensions, glfw_extensions + extension_count);
 
     return extensions; 
+}
+
+vk::SurfaceFormatKHR select_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) {
+    auto selected_format = available_formats[0];
+    
+    for(const auto& available_format : available_formats) {
+        if(available_format.format == vk::Format::eB8G8R8A8Srgb && available_format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+            selected_format = available_format;
+            break;
+        }
+    }
+
+    return selected_format;
+}
+
+vk::PresentModeKHR select_present_mode(const std::vector<vk::PresentModeKHR> available_modes) {
+    auto selected_mode = vk::PresentModeKHR::eFifo; // Always available
+
+    for(const auto& available_mode : available_modes) {
+        if(available_mode == vk::PresentModeKHR::eMailbox) {
+            selected_mode = available_mode;
+            break;
+        }
+    }
+
+    return selected_mode;
+}
+
+vk::Extent2D select_swapchain_extent(const vk::SurfaceCapabilitiesKHR& surface_capabilities, uint32_t width, uint32_t height) {
+    vk::Extent2D swapchain_extent;
+
+    if(surface_capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+        swapchain_extent = surface_capabilities.currentExtent;
+    } else {
+        swapchain_extent.width = std::clamp(width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
+        swapchain_extent.height = std::clamp(height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
+    }
+
+    return swapchain_extent;
 }
 
 Window::Window(std::string name, int width, int height) {
@@ -148,6 +189,7 @@ void Renderer::select_physical_device() {
     if(!queue_family_found) {
         throw std::runtime_error("Could not find a graphics queue");
     }
+    this->queue_family_index = queue_family_index;
 
     auto extension_properties = physical_device.enumerateDeviceExtensionProperties();
     if(!check_device_extensions(extension_properties)) {
@@ -164,10 +206,51 @@ void Renderer::select_physical_device() {
 
 }
 
+void Renderer::create_swapchain() {
+    auto physical_device = vk::raii::PhysicalDevices(instance).front();
+    
+    auto surface_format = select_surface_format(physical_device.getSurfaceFormatsKHR(surface));
+    swapchain_data.color_format = surface_format.format;
+
+    auto present_mode = select_present_mode(physical_device.getSurfacePresentModesKHR(surface));
+    
+    int width, height;
+    glfwGetFramebufferSize(main_window.window, &width, &height);
+    auto surface_capabilities = physical_device.getSurfaceCapabilitiesKHR(surface);
+    swapchain_data.swapchain_extent = select_swapchain_extent(surface_capabilities,
+    static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+
+    uint32_t image_count = surface_capabilities.minImageCount + 1;
+    if(surface_capabilities.maxImageCount != 0 && image_count > surface_capabilities.maxImageCount)
+        image_count = surface_capabilities.maxImageCount;
+
+    vk::SwapchainCreateInfoKHR swapchain_info(
+        vk::SwapchainCreateFlagsKHR(),
+        surface,
+        image_count,
+        swapchain_data.color_format,
+        surface_format.colorSpace,
+        swapchain_data.swapchain_extent,
+        1,
+        vk::ImageUsageFlagBits::eColorAttachment,
+        vk::SharingMode::eExclusive, // Assuming a single queue for graphics and present
+        {},
+        surface_capabilities.currentTransform,
+        vk::CompositeAlphaFlagBitsKHR::eOpaque,
+        present_mode,
+        vk::True
+    );
+
+    swapchain_data.swapchain = vk::raii::SwapchainKHR(device, swapchain_info);
+    swapchain_data.images = swapchain_data.swapchain.getImages();
+
+}
+
 Renderer::Renderer() : main_window("STL Viewer", 800, 600) {
     create_instance();
     create_surface();
     select_physical_device();
+    create_swapchain();
 
     while(!glfwWindowShouldClose(main_window.window)) {
         glfwPollEvents();
