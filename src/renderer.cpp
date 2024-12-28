@@ -210,14 +210,14 @@ void Renderer::create_swapchain() {
     auto physical_device = vk::raii::PhysicalDevices(instance).front();
     
     auto surface_format = select_surface_format(physical_device.getSurfaceFormatsKHR(surface));
-    swapchain_data.color_format = surface_format.format;
+    color_format = surface_format.format;
 
     auto present_mode = select_present_mode(physical_device.getSurfacePresentModesKHR(surface));
     
     int width, height;
     glfwGetFramebufferSize(main_window.window, &width, &height);
     auto surface_capabilities = physical_device.getSurfaceCapabilitiesKHR(surface);
-    swapchain_data.swapchain_extent = select_swapchain_extent(surface_capabilities,
+    swapchain_extent = select_swapchain_extent(surface_capabilities,
     static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
     uint32_t image_count = surface_capabilities.minImageCount + 1;
@@ -228,9 +228,9 @@ void Renderer::create_swapchain() {
         vk::SwapchainCreateFlagsKHR(),
         surface,
         image_count,
-        swapchain_data.color_format,
+        color_format,
         surface_format.colorSpace,
-        swapchain_data.swapchain_extent,
+        swapchain_extent,
         1,
         vk::ImageUsageFlagBits::eColorAttachment,
         vk::SharingMode::eExclusive, // Assuming a single queue for graphics and present
@@ -241,8 +241,8 @@ void Renderer::create_swapchain() {
         vk::True
     );
 
-    swapchain_data.swapchain = vk::raii::SwapchainKHR(device, swapchain_info);
-    swapchain_data.images = swapchain_data.swapchain.getImages();
+    swapchain = vk::raii::SwapchainKHR(device, swapchain_info);
+
 
 }
 

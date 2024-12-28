@@ -29,12 +29,14 @@ struct SwapChainData {
 class Renderer {
 private:
 
-SwapChainData swapchain_data; // Should destruct before main_window to avoid segfaulting
 Window main_window;
 vk::raii::Context context;
 vk::raii::Instance instance {nullptr};
 vk::raii::SurfaceKHR surface {nullptr};
 vk::raii::Device device {nullptr};
+vk::raii::SwapchainKHR swapchain {nullptr};
+vk::Format color_format;
+vk::Extent2D swapchain_extent;
 std::optional<uint32_t> queue_family_index; // Assuming single queue family for graphics and present
 
 private:

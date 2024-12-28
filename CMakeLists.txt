@@ -30,11 +30,35 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Xi
 )
 
+# Shader compilation
+find_program(GLSLC glslc)
+if(NOT GLSLC)
+    message(FATAL_ERROR "glslc not found! Make sure Vulkan SDK is installed and glslc is in PATH.")
+endif()
+
+set(shader_path "${CMAKE_SOURCE_DIR}/src/shaders/")
+file(GLOB shaders "${shader_path}*.vert" "${shader_path}*.frag")
+
+foreach(shader ${shaders})
+    get_filename_component(shader_name ${shader} NAME)
+    set(output_spv "${CMAKE_BINARY_DIR}/${shader_name}.spv")
+    add_custom_command(
+        OUTPUT ${output_spv}
+        COMMAND ${GLSLC} ${shader} -o ${output_spv}
+        DEPENDS ${shader}
+        COMMENT "Compiling ${shader} to ${output_spv}"
+    )
+    list(APPEND SPIRV_SHADERS ${output_spv})
+endforeach()
+
+# Add custom target for shaders
+add_custom_target(Shaders ALL DEPENDS ${SPIRV_SHADERS})
+
+# Ensure shaders are built before the main project
+add_dependencies(${PROJECT_NAME} Shaders)
 
 # Link Libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan glm::glm glfw)
 
-
 # Add compile options if needed (optional)
-# target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
-
+target_compile_options(${PROJECT_NAME} PRIVATE -g)
