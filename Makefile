@@ -9,7 +9,7 @@ SRC_DIR = src
 BUILD_DIR = build
 
 # Source and object files
-SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/renderer.cpp $(SRC_DIR)/glad.c
+SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/renderer.cpp $(SRC_DIR)/util.cpp $(SRC_DIR)/glad.c
 OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES)))
 TARGET = STLViewer
 
