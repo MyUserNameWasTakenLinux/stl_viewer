@@ -2,29 +2,6 @@
 #include <iostream>
 #include <vector>
 
-
-bool to_triangle = false;
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
-
-const char *OTHER_FRAGMENT_SHADER = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.7f, 1.0f);\n"
-    "}\n\0";
-
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
@@ -54,9 +31,6 @@ void Renderer::handle_input(GLFWwindow* w) {
     if(glfwGetKey(w, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(main_window.handle, true);
     }
-    if(glfwGetKey(w, GLFW_KEY_T) == GLFW_PRESS) {
-        to_triangle = !to_triangle;
-    }
 }
 
 Renderer::Renderer() {
@@ -65,59 +39,87 @@ Renderer::Renderer() {
 
     Shader s("src/shaders/shader.vert", "src/shaders/shader.frag");
 
-    float vertices[] = {
-        -0.5, -0.5, 0.0,
-        0.5, 0.5, 0.0,
-        0.5, -0.5, 0.0
+        std::vector<Vertex> vertices = {
+        // Front face
+        {glm::vec3(-0.5, -0.5,  0.5), glm::vec3(0.5, 0.2, 0.8)}, // Bottom-left
+        {glm::vec3( 0.5, -0.5,  0.5), glm::vec3(0.5, 0.2, 0.8)}, // Bottom-right
+        {glm::vec3( 0.5,  0.5,  0.5), glm::vec3(0.5, 0.2, 0.8)}, // Top-right
+        {glm::vec3(-0.5,  0.5,  0.5), glm::vec3(0.5, 0.2, 0.8)}, // Top-left
+
+        // Back face
+        {glm::vec3(-0.5, -0.5, -0.5), glm::vec3(0.2, 0.8, 0.2)}, // Bottom-left
+        {glm::vec3( 0.5, -0.5, -0.5), glm::vec3(0.2, 0.8, 0.2)}, // Bottom-right
+        {glm::vec3( 0.5,  0.5, -0.5), glm::vec3(0.2, 0.8, 0.2)}, // Top-right
+        {glm::vec3(-0.5,  0.5, -0.5), glm::vec3(0.2, 0.8, 0.2)}, // Top-left
+
+        // Left face
+        {glm::vec3(-0.5, -0.5,  0.5), glm::vec3(0.8, 0.5, 0.2)}, // Front-bottom
+        {glm::vec3(-0.5,  0.5,  0.5), glm::vec3(0.8, 0.5, 0.2)}, // Front-top
+        {glm::vec3(-0.5,  0.5, -0.5), glm::vec3(0.8, 0.5, 0.2)}, // Back-top
+        {glm::vec3(-0.5, -0.5, -0.5), glm::vec3(0.8, 0.5, 0.2)}, // Back-bottom
+
+        // Right face
+        {glm::vec3( 0.5, -0.5,  0.5), glm::vec3(0.2, 0.5, 0.8)}, // Front-bottom
+        {glm::vec3( 0.5,  0.5,  0.5), glm::vec3(0.2, 0.5, 0.8)}, // Front-top
+        {glm::vec3( 0.5,  0.5, -0.5), glm::vec3(0.2, 0.5, 0.8)}, // Back-top
+        {glm::vec3( 0.5, -0.5, -0.5), glm::vec3(0.2, 0.5, 0.8)}, // Back-bottom
+
+        // Top face
+        {glm::vec3(-0.5,  0.5,  0.5), glm::vec3(0.8, 0.8, 0.2)}, // Front-left
+        {glm::vec3( 0.5,  0.5,  0.5), glm::vec3(0.8, 0.8, 0.2)}, // Front-right
+        {glm::vec3( 0.5,  0.5, -0.5), glm::vec3(0.8, 0.8, 0.2)}, // Back-right
+        {glm::vec3(-0.5,  0.5, -0.5), glm::vec3(0.8, 0.8, 0.2)}, // Back-left
+
+        // Bottom face
+        {glm::vec3(-0.5, -0.5,  0.5), glm::vec3(0.2, 0.8, 0.8)}, // Front-left
+        {glm::vec3( 0.5, -0.5,  0.5), glm::vec3(0.2, 0.8, 0.8)}, // Front-right
+        {glm::vec3( 0.5, -0.5, -0.5), glm::vec3(0.2, 0.8, 0.8)}, // Back-right
+        {glm::vec3(-0.5, -0.5, -0.5), glm::vec3(0.2, 0.8, 0.8)}  // Back-left
+    };
+    std::vector<Vertex> other_vertices = {
+        {glm::vec3(-0.5, -0.5, 0.0), glm::vec3(0.5, 0.2, 0.8)},
+        {glm::vec3(-0.5, 0.5, 0.0), glm::vec3(0.5, 0.2, 0.8)},
+        {glm::vec3(0.5, 0.5, 0.0), glm::vec3(0.5, 0.2, 0.8)}
     };
 
-    float other_vertices[] = {
-        -0.5, -0.5, 0.0,
-        -0.5, 0.5, 0.0,
-        0.5, 0.5, 0.0
+    std::vector<unsigned int> indices = {
+        // Front face
+        0, 1, 2,  0, 2, 3,
+        // Back face
+        4, 5, 6,  4, 6, 7,
+        // Left face
+        8, 9, 10, 8, 10, 11,
+        // Right face
+        12, 13, 14, 12, 14, 15,
+        // Top face
+        16, 17, 18, 16, 18, 19,
+        // Bottom face
+        20, 21, 22, 20, 22, 23
     };
 
+    auto triangle = Mesh(vertices, indices);
+    auto cube = Mesh("TestCube.stl");
 
-    std::vector<unsigned int> VAOs;
-    std::vector<unsigned int> VBOs;
-    VAOs.reserve(2);
-    VBOs.reserve(2);
-    glGenVertexArrays(2, VAOs.data());
-    glGenBuffers(2, VBOs.data());
-    
-    glBindVertexArray(VAOs[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void* ) 0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    glBindVertexArray(VAOs[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(other_vertices), other_vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void* ) 0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-
+    glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(main_window.handle)) {
 
         handle_input(main_window.handle);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if(!to_triangle) {
-            s.use();
-            glBindVertexArray(VAOs[0]);
-            glDrawArrays(GL_TRIANGLES, 0, 3);
-        }
         s.use();
-        glBindVertexArray(VAOs[1]);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0, 0.0, -3.0));
+        glm::mat4 projection;
+        projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 200.0f); // Careful with aspect ratio
+        s.set_mat4("model", model);
+        s.set_mat4("view", view);
+        s.set_mat4("projection", projection);
+        triangle.draw();
 
         glfwSwapBuffers(main_window.handle);
         glfwPollEvents();
