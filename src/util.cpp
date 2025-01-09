@@ -204,6 +204,7 @@ Mesh::Mesh(std::filesystem::path stl_path) {
             std::memcpy(&z, buffer.data(), sizeof(float));
 
             // Push vertex with hardcoded color
+            // std::cout << "Triangle: " << triangle_count << " x, y, z " << x << " " << y << " " << z << "\n";
             vertices.push_back({glm::vec3(x, y, z), glm::vec3(0.3, 0.5, 0.4)});
 
             indices.push_back(index++);
@@ -221,6 +222,27 @@ Mesh::Mesh(std::filesystem::path stl_path) {
     }
 
     file.close();
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) 0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, color));
+
+    glBindVertexArray(0);
+
 }
 
 

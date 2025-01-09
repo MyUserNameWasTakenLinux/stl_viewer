@@ -39,65 +39,6 @@ Renderer::Renderer() {
 
     Shader s("src/shaders/shader.vert", "src/shaders/shader.frag");
 
-        std::vector<Vertex> vertices = {
-        // Front face
-        {glm::vec3(-0.5, -0.5,  0.5), glm::vec3(0.5, 0.2, 0.8)}, // Bottom-left
-        {glm::vec3( 0.5, -0.5,  0.5), glm::vec3(0.5, 0.2, 0.8)}, // Bottom-right
-        {glm::vec3( 0.5,  0.5,  0.5), glm::vec3(0.5, 0.2, 0.8)}, // Top-right
-        {glm::vec3(-0.5,  0.5,  0.5), glm::vec3(0.5, 0.2, 0.8)}, // Top-left
-
-        // Back face
-        {glm::vec3(-0.5, -0.5, -0.5), glm::vec3(0.2, 0.8, 0.2)}, // Bottom-left
-        {glm::vec3( 0.5, -0.5, -0.5), glm::vec3(0.2, 0.8, 0.2)}, // Bottom-right
-        {glm::vec3( 0.5,  0.5, -0.5), glm::vec3(0.2, 0.8, 0.2)}, // Top-right
-        {glm::vec3(-0.5,  0.5, -0.5), glm::vec3(0.2, 0.8, 0.2)}, // Top-left
-
-        // Left face
-        {glm::vec3(-0.5, -0.5,  0.5), glm::vec3(0.8, 0.5, 0.2)}, // Front-bottom
-        {glm::vec3(-0.5,  0.5,  0.5), glm::vec3(0.8, 0.5, 0.2)}, // Front-top
-        {glm::vec3(-0.5,  0.5, -0.5), glm::vec3(0.8, 0.5, 0.2)}, // Back-top
-        {glm::vec3(-0.5, -0.5, -0.5), glm::vec3(0.8, 0.5, 0.2)}, // Back-bottom
-
-        // Right face
-        {glm::vec3( 0.5, -0.5,  0.5), glm::vec3(0.2, 0.5, 0.8)}, // Front-bottom
-        {glm::vec3( 0.5,  0.5,  0.5), glm::vec3(0.2, 0.5, 0.8)}, // Front-top
-        {glm::vec3( 0.5,  0.5, -0.5), glm::vec3(0.2, 0.5, 0.8)}, // Back-top
-        {glm::vec3( 0.5, -0.5, -0.5), glm::vec3(0.2, 0.5, 0.8)}, // Back-bottom
-
-        // Top face
-        {glm::vec3(-0.5,  0.5,  0.5), glm::vec3(0.8, 0.8, 0.2)}, // Front-left
-        {glm::vec3( 0.5,  0.5,  0.5), glm::vec3(0.8, 0.8, 0.2)}, // Front-right
-        {glm::vec3( 0.5,  0.5, -0.5), glm::vec3(0.8, 0.8, 0.2)}, // Back-right
-        {glm::vec3(-0.5,  0.5, -0.5), glm::vec3(0.8, 0.8, 0.2)}, // Back-left
-
-        // Bottom face
-        {glm::vec3(-0.5, -0.5,  0.5), glm::vec3(0.2, 0.8, 0.8)}, // Front-left
-        {glm::vec3( 0.5, -0.5,  0.5), glm::vec3(0.2, 0.8, 0.8)}, // Front-right
-        {glm::vec3( 0.5, -0.5, -0.5), glm::vec3(0.2, 0.8, 0.8)}, // Back-right
-        {glm::vec3(-0.5, -0.5, -0.5), glm::vec3(0.2, 0.8, 0.8)}  // Back-left
-    };
-    std::vector<Vertex> other_vertices = {
-        {glm::vec3(-0.5, -0.5, 0.0), glm::vec3(0.5, 0.2, 0.8)},
-        {glm::vec3(-0.5, 0.5, 0.0), glm::vec3(0.5, 0.2, 0.8)},
-        {glm::vec3(0.5, 0.5, 0.0), glm::vec3(0.5, 0.2, 0.8)}
-    };
-
-    std::vector<unsigned int> indices = {
-        // Front face
-        0, 1, 2,  0, 2, 3,
-        // Back face
-        4, 5, 6,  4, 6, 7,
-        // Left face
-        8, 9, 10, 8, 10, 11,
-        // Right face
-        12, 13, 14, 12, 14, 15,
-        // Top face
-        16, 17, 18, 16, 18, 19,
-        // Bottom face
-        20, 21, 22, 20, 22, 23
-    };
-
-    auto triangle = Mesh(vertices, indices);
     auto cube = Mesh("TestCube.stl");
 
     glEnable(GL_DEPTH_TEST);
@@ -113,13 +54,13 @@ Renderer::Renderer() {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0, 0.0, -3.0));
+        view = glm::translate(view, glm::vec3(0.0, 0.0, -60.0));
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 200.0f); // Careful with aspect ratio
         s.set_mat4("model", model);
         s.set_mat4("view", view);
         s.set_mat4("projection", projection);
-        triangle.draw();
+        cube.draw();
 
         glfwSwapBuffers(main_window.handle);
         glfwPollEvents();
